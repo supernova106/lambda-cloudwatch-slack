@@ -49,6 +49,26 @@ var postMessage = function(message, callback) {
   postReq.end();
 };
 
+var handleGenericSNSNotification = function(event, context) {
+  var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
+  var subject = "AWS SNS Notification";
+  var message = event.Records[0].Sns.Message;
+
+  var color = "danger";
+  var slackMessage = {
+    text: "*" + subject + "*",
+    attachments: [
+      {
+        "fields": [
+          { "title": "Subject", "value": event.Records[0].Sns.Subject, "short": false},
+          { "title": "Message", "value": message, "short": false}
+        ],
+        "color": color,
+        "ts":  timestamp
+      }
+    ]
+  };
+
 var handleElasticBeanstalk = function(event, context) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var subject = "AWS Elastic Beanstalk Notification";
@@ -268,6 +288,7 @@ var processEvent = function(event, context) {
   var eventSubscriptionArn = event.Records[0].EventSubscriptionArn;
   var eventSnsSubject = event.Records[0].Sns.Subject || 'no subject';
   var eventSnsMessage = event.Records[0].Sns.Message;
+  var eventSource = event.Records[0].EventSource;
 
   if(eventSubscriptionArn.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsSubject.indexOf(config.services.elasticbeanstalk.match_text) > -1 || eventSnsMessage.indexOf(config.services.elasticbeanstalk.match_text) > -1){
     console.log("processing elasticbeanstalk notification");
@@ -288,6 +309,10 @@ var processEvent = function(event, context) {
   else if(eventSubscriptionArn.indexOf(config.services.autoscaling.match_text) > -1 || eventSnsSubject.indexOf(config.services.autoscaling.match_text) > -1 || eventSnsMessage.indexOf(config.services.autoscaling.match_text) > -1){
     console.log("processing autoscaling notification");
     slackMessage = handleAutoScaling(event, context);
+  }
+  else if(eventSource == "aws:sns") {
+    console.log("processing generic sns notification");
+    slackMessage = handleGenericSNSNotification(event, context);
   }
   else{
     context.fail("No matching processor for event. [EventSubscriptionArn: " + eventSubscriptionArn + "]");
