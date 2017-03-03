@@ -69,6 +69,9 @@ var handleGenericSNSNotification = function(event, context) {
     ]
   };
 
+  return _.merge(baseSlackMessage, slackMessage);
+};
+
 var handleElasticBeanstalk = function(event, context) {
   var timestamp = (new Date(event.Records[0].Sns.Timestamp)).getTime()/1000;
   var subject = "AWS Elastic Beanstalk Notification";
