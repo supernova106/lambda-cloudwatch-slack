@@ -1,8 +1,6 @@
 
 LAMBDA_TEST?=./node_modules/node-lambda/bin/node-lambda
-LAMBDA_FUNCTION_NAME=
-AWS_REGION=
-AWS_ROLE=
+LAMBDA_FUNCTION_NAME=cloudwatch-to-slack
 AWS_PROFILE=default
 
 all:
